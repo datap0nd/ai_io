@@ -1,0 +1,119 @@
+-- Step 1 DAX validation query.
+--
+-- How to use:
+-- 1. Run this against the frozen Power BI model before replacing the query.
+--    Export as frozen_step1_quantity_baseline.csv.
+-- 2. Apply the Step 1 materialized view and Power Query adaptation.
+-- 3. Run this same query again.
+--    Export as sql_step1_quantity_result.csv.
+-- 4. Compare the two CSV files exactly.
+--
+-- This validates quantity logic only. Do not use this for amount metrics.
+
+DEFINE
+    MEASURE Global_Inflow_Outflow[_V Row Count] =
+        COUNTROWS(Global_Inflow_Outflow)
+
+    MEASURE Global_Inflow_Outflow[_V Active Qty] =
+        SUM(Global_Inflow_Outflow[Active Qty])
+
+    MEASURE Global_Inflow_Outflow[_V Total Inflow] =
+        SUM(Global_Inflow_Outflow[Total Inflow])
+
+    MEASURE Global_Inflow_Outflow[_V From MENA] =
+        SUM(Global_Inflow_Outflow[From MENA])
+
+    MEASURE Global_Inflow_Outflow[_V From Non-MENA] =
+        SUM(Global_Inflow_Outflow[From Non-MENA])
+
+    MEASURE Global_Inflow_Outflow[_V Total Outflow] =
+        SUM(Global_Inflow_Outflow[Total Outflow])
+
+    MEASURE Global_Inflow_Outflow[_V To MENA Outflow] =
+        SUM(Global_Inflow_Outflow[To MENA Outflow])
+
+    MEASURE Global_Inflow_Outflow[_V To Non-MENA] =
+        SUM(Global_Inflow_Outflow[To Non-MENA])
+
+    MEASURE Global_Inflow_Outflow[_V S/O SCM] =
+        SUM(Global_Inflow_Outflow[S/O SCM])
+
+    MEASURE Global_Inflow_Outflow[_V Domestic Demand] =
+        SUM(Global_Inflow_Outflow[Domestic Demand])
+
+    MEASURE Global_Inflow_Outflow[_V S/O that Stays] =
+        SUM(Global_Inflow_Outflow[S/O that Stays])
+
+    MEASURE Global_Inflow_Outflow[_V 2nd Activation In] =
+        SUM(Global_Inflow_Outflow[2nd Activation In])
+
+    MEASURE Global_Inflow_Outflow[_V 2nd Activation Out] =
+        SUM(Global_Inflow_Outflow[2nd Activation Out])
+
+    MEASURE Global_Inflow_Outflow[_V CI In] =
+        SUM(Global_Inflow_Outflow[CI In])
+
+    MEASURE Global_Inflow_Outflow[_V CI Out] =
+        SUM(Global_Inflow_Outflow[CI Out])
+
+    MEASURE Global_Inflow_Outflow[_V Parallel S/O] =
+        SUM(Global_Inflow_Outflow[Parallel S/O])
+
+    MEASURE Global_Inflow_Outflow[_V Net Export] =
+        [_V Total Outflow] - [_V Total Inflow]
+
+EVALUATE
+VAR TotalRows =
+    UNION(
+        ROW("Grain", "Total", "Member", "All", "Metric", "Row Count", "Value", [_V Row Count]),
+        ROW("Grain", "Total", "Member", "All", "Metric", "Active Qty", "Value", [_V Active Qty]),
+        ROW("Grain", "Total", "Member", "All", "Metric", "Total Inflow", "Value", [_V Total Inflow]),
+        ROW("Grain", "Total", "Member", "All", "Metric", "From MENA", "Value", [_V From MENA]),
+        ROW("Grain", "Total", "Member", "All", "Metric", "From Non-MENA", "Value", [_V From Non-MENA]),
+        ROW("Grain", "Total", "Member", "All", "Metric", "Total Outflow", "Value", [_V Total Outflow]),
+        ROW("Grain", "Total", "Member", "All", "Metric", "To MENA Outflow", "Value", [_V To MENA Outflow]),
+        ROW("Grain", "Total", "Member", "All", "Metric", "To Non-MENA", "Value", [_V To Non-MENA]),
+        ROW("Grain", "Total", "Member", "All", "Metric", "S/O SCM", "Value", [_V S/O SCM]),
+        ROW("Grain", "Total", "Member", "All", "Metric", "Domestic Demand", "Value", [_V Domestic Demand]),
+        ROW("Grain", "Total", "Member", "All", "Metric", "S/O that Stays", "Value", [_V S/O that Stays]),
+        ROW("Grain", "Total", "Member", "All", "Metric", "2nd Activation In", "Value", [_V 2nd Activation In]),
+        ROW("Grain", "Total", "Member", "All", "Metric", "2nd Activation Out", "Value", [_V 2nd Activation Out]),
+        ROW("Grain", "Total", "Member", "All", "Metric", "CI In", "Value", [_V CI In]),
+        ROW("Grain", "Total", "Member", "All", "Metric", "CI Out", "Value", [_V CI Out]),
+        ROW("Grain", "Total", "Member", "All", "Metric", "Parallel S/O", "Value", [_V Parallel S/O]),
+        ROW("Grain", "Total", "Member", "All", "Metric", "Net Export", "Value", [_V Net Export])
+    )
+
+VAR MonthRows =
+    UNION(
+        SELECTCOLUMNS(SUMMARIZECOLUMNS(Global_Inflow_Outflow[Month], "Value", [_V Total Inflow]), "Grain", "Month", "Member", FORMAT(Global_Inflow_Outflow[Month], "0"), "Metric", "Total Inflow", "Value", [Value]),
+        SELECTCOLUMNS(SUMMARIZECOLUMNS(Global_Inflow_Outflow[Month], "Value", [_V Total Outflow]), "Grain", "Month", "Member", FORMAT(Global_Inflow_Outflow[Month], "0"), "Metric", "Total Outflow", "Value", [Value]),
+        SELECTCOLUMNS(SUMMARIZECOLUMNS(Global_Inflow_Outflow[Month], "Value", [_V S/O SCM]), "Grain", "Month", "Member", FORMAT(Global_Inflow_Outflow[Month], "0"), "Metric", "S/O SCM", "Value", [Value]),
+        SELECTCOLUMNS(SUMMARIZECOLUMNS(Global_Inflow_Outflow[Month], "Value", [_V Domestic Demand]), "Grain", "Month", "Member", FORMAT(Global_Inflow_Outflow[Month], "0"), "Metric", "Domestic Demand", "Value", [Value]),
+        SELECTCOLUMNS(SUMMARIZECOLUMNS(Global_Inflow_Outflow[Month], "Value", [_V Parallel S/O]), "Grain", "Month", "Member", FORMAT(Global_Inflow_Outflow[Month], "0"), "Metric", "Parallel S/O", "Value", [Value])
+    )
+
+VAR InOutRows =
+    UNION(
+        SELECTCOLUMNS(SUMMARIZECOLUMNS(Global_Inflow_Outflow[In/Out], "Value", [_V Active Qty]), "Grain", "In/Out", "Member", Global_Inflow_Outflow[In/Out], "Metric", "Active Qty", "Value", [Value]),
+        SELECTCOLUMNS(SUMMARIZECOLUMNS(Global_Inflow_Outflow[In/Out], "Value", [_V Total Inflow]), "Grain", "In/Out", "Member", Global_Inflow_Outflow[In/Out], "Metric", "Total Inflow", "Value", [Value]),
+        SELECTCOLUMNS(SUMMARIZECOLUMNS(Global_Inflow_Outflow[In/Out], "Value", [_V Total Outflow]), "Grain", "In/Out", "Member", Global_Inflow_Outflow[In/Out], "Metric", "Total Outflow", "Value", [Value]),
+        SELECTCOLUMNS(SUMMARIZECOLUMNS(Global_Inflow_Outflow[In/Out], "Value", [_V S/O SCM]), "Grain", "In/Out", "Member", Global_Inflow_Outflow[In/Out], "Metric", "S/O SCM", "Value", [Value]),
+        SELECTCOLUMNS(SUMMARIZECOLUMNS(Global_Inflow_Outflow[In/Out], "Value", [_V Domestic Demand]), "Grain", "In/Out", "Member", Global_Inflow_Outflow[In/Out], "Metric", "Domestic Demand", "Value", [Value])
+    )
+
+VAR RegionRows =
+    UNION(
+        SELECTCOLUMNS(SUMMARIZECOLUMNS(Global_Inflow_Outflow[Region], "Value", [_V Total Inflow]), "Grain", "Region", "Member", Global_Inflow_Outflow[Region], "Metric", "Total Inflow", "Value", [Value]),
+        SELECTCOLUMNS(SUMMARIZECOLUMNS(Global_Inflow_Outflow[Region], "Value", [_V Total Outflow]), "Grain", "Region", "Member", Global_Inflow_Outflow[Region], "Metric", "Total Outflow", "Value", [Value]),
+        SELECTCOLUMNS(SUMMARIZECOLUMNS(Global_Inflow_Outflow[Region], "Value", [_V S/O SCM]), "Grain", "Region", "Member", Global_Inflow_Outflow[Region], "Metric", "S/O SCM", "Value", [Value]),
+        SELECTCOLUMNS(SUMMARIZECOLUMNS(Global_Inflow_Outflow[Region], "Value", [_V Domestic Demand]), "Grain", "Region", "Member", Global_Inflow_Outflow[Region], "Metric", "Domestic Demand", "Value", [Value])
+    )
+
+RETURN
+    UNION(TotalRows, MonthRows, InOutRows, RegionRows)
+
+ORDER BY
+    [Grain],
+    [Member],
+    [Metric]

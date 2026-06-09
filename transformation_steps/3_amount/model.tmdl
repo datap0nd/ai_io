@@ -1,0 +1,175 @@
+// Step 3 TMDL script.
+//
+// Purpose:
+// Point Global_Inflow_Outflow at the amount view and restore measure switching
+// between Active Qty and Amount ($).
+
+createOrReplace
+
+    ref table Global_Inflow_Outflow
+
+        column 'S/O Amt'
+            dataType: double
+            summarizeBy: sum
+            sourceColumn: S/O Amt
+
+        column 'Domestic Demand Amt'
+            dataType: double
+            summarizeBy: sum
+            sourceColumn: Domestic Demand Amt
+
+        column 'From MENA Amt'
+            dataType: double
+            summarizeBy: sum
+            sourceColumn: From MENA Amt
+
+        column 'From Non-MENA Amt'
+            dataType: double
+            summarizeBy: sum
+            sourceColumn: From Non-MENA Amt
+
+        column 'S/O SCM Amt'
+            dataType: double
+            summarizeBy: sum
+            sourceColumn: S/O SCM Amt
+
+        column 'S/O that Stays Amt'
+            dataType: double
+            summarizeBy: sum
+            sourceColumn: S/O that Stays Amt
+
+        column 'To MENA Outflow Amt'
+            dataType: double
+            summarizeBy: sum
+            sourceColumn: To MENA Outflow Amt
+
+        column 'To Non-MENA Amt'
+            dataType: double
+            summarizeBy: sum
+            sourceColumn: To Non-MENA Amt
+
+        column 'Total Inflow Amt'
+            dataType: double
+            summarizeBy: sum
+            sourceColumn: Total Inflow Amt
+
+        column 'Total Outflow Amt'
+            dataType: double
+            summarizeBy: sum
+            sourceColumn: Total Outflow Amt
+
+        column '2nd Activation In Amt'
+            dataType: double
+            summarizeBy: sum
+            sourceColumn: 2nd Activation In Amt
+
+        column '2nd Activation Out Amt'
+            dataType: double
+            summarizeBy: sum
+            sourceColumn: 2nd Activation Out Amt
+
+        column 'CI In Amt'
+            dataType: double
+            summarizeBy: sum
+            sourceColumn: CI In Amt
+
+        column 'CI Out Amt'
+            dataType: double
+            summarizeBy: sum
+            sourceColumn: CI Out Amt
+
+        column 'Parallel S/O Amt'
+            dataType: double
+            summarizeBy: sum
+            sourceColumn: Parallel S/O Amt
+
+        partition Global_Inflow_Outflow = m
+            mode: import
+            source =
+                    let
+                        Source = PostgreSQL.Database("SERVER_NAME", "DATABASE_NAME"),
+                        Step3Amount = Value.NativeQuery(
+                            Source,
+                            "select * from bi_reporting.io_3_amount_mv",
+                            null,
+                            [EnableFolding = true]
+                        )
+                    in
+                        Step3Amount
+
+    ref table Formulas
+
+        measure '02 S/O' =
+                var selectedmetric = selectedvalue(MeasureSelect[Measure], "Active Qty")
+                return if(selectedmetric = "Active Qty", sum(Global_Inflow_Outflow[Active Qty]), sum(Global_Inflow_Outflow[S/O Amt]))
+            formatString: #,0
+
+        measure 'Total Inflow' =
+                var selectedmetric = selectedvalue(MeasureSelect[Measure], "Active Qty")
+                return if(selectedmetric = "Active Qty", sum(Global_Inflow_Outflow[Total Inflow]), sum(Global_Inflow_Outflow[Total Inflow Amt]))
+            formatString: #,0
+
+        measure 'From MENA' =
+                var selectedmetric = selectedvalue(MeasureSelect[Measure], "Active Qty")
+                return if(selectedmetric = "Active Qty", sum(Global_Inflow_Outflow[From MENA]), sum(Global_Inflow_Outflow[From MENA Amt]))
+            formatString: #,0
+
+        measure 'From non-MENA' =
+                var selectedmetric = selectedvalue(MeasureSelect[Measure], "Active Qty")
+                return if(selectedmetric = "Active Qty", sum(Global_Inflow_Outflow[From Non-MENA]), sum(Global_Inflow_Outflow[From Non-MENA Amt]))
+            formatString: #,0
+
+        measure 'Total Outflow' =
+                var selectedmetric = selectedvalue(MeasureSelect[Measure], "Active Qty")
+                return if(selectedmetric = "Active Qty", sum(Global_Inflow_Outflow[Total Outflow]), sum(Global_Inflow_Outflow[Total Outflow Amt]))
+            formatString: #,0
+
+        measure 'To MENA' =
+                var selectedmetric = selectedvalue(MeasureSelect[Measure], "Active Qty")
+                return if(selectedmetric = "Active Qty", sum(Global_Inflow_Outflow[To MENA Outflow]), sum(Global_Inflow_Outflow[To MENA Outflow Amt]))
+            formatString: #,0
+
+        measure 'To non-MENA' =
+                var selectedmetric = selectedvalue(MeasureSelect[Measure], "Active Qty")
+                return if(selectedmetric = "Active Qty", sum(Global_Inflow_Outflow[To Non-MENA]), sum(Global_Inflow_Outflow[To Non-MENA Amt]))
+            formatString: #,0
+
+        measure 'S/O SCM' =
+                var selectedmetric = selectedvalue(MeasureSelect[Measure], "Active Qty")
+                return if(selectedmetric = "Active Qty", sum(Global_Inflow_Outflow[S/O SCM]), sum(Global_Inflow_Outflow[S/O SCM Amt]))
+            formatString: #,0
+
+        measure 'Domestic Demand' =
+                var selectedmetric = selectedvalue(MeasureSelect[Measure], "Active Qty")
+                return if(selectedmetric = "Active Qty", sum(Global_Inflow_Outflow[Domestic Demand]), sum(Global_Inflow_Outflow[Domestic Demand Amt]))
+            formatString: #,0
+
+        measure 'S/O that Stays' =
+                var selectedmetric = selectedvalue(MeasureSelect[Measure], "Active Qty")
+                return if(selectedmetric = "Active Qty", sum(Global_Inflow_Outflow[S/O that Stays]), sum(Global_Inflow_Outflow[S/O that Stays Amt]))
+            formatString: #,0
+
+        measure '2nd Activation In' =
+                var selectedmetric = selectedvalue(MeasureSelect[Measure], "Active Qty")
+                return if(selectedmetric = "Active Qty", sum(Global_Inflow_Outflow[2nd Activation In]), sum(Global_Inflow_Outflow[2nd Activation In Amt]))
+            formatString: #,0
+
+        measure '2nd Activation Out' =
+                var selectedmetric = selectedvalue(MeasureSelect[Measure], "Active Qty")
+                return if(selectedmetric = "Active Qty", sum(Global_Inflow_Outflow[2nd Activation Out]), sum(Global_Inflow_Outflow[2nd Activation Out Amt]))
+            formatString: #,0
+
+        measure 'CI In' =
+                var selectedmetric = selectedvalue(MeasureSelect[Measure], "Active Qty")
+                return if(selectedmetric = "Active Qty", sum(Global_Inflow_Outflow[CI In]), sum(Global_Inflow_Outflow[CI In Amt]))
+            formatString: #,0
+
+        measure 'CI Out' =
+                var selectedmetric = selectedvalue(MeasureSelect[Measure], "Active Qty")
+                return if(selectedmetric = "Active Qty", sum(Global_Inflow_Outflow[CI Out]), sum(Global_Inflow_Outflow[CI Out Amt]))
+            formatString: #,0
+
+        measure 'Parallel S/O' =
+                var selectedmetric = selectedvalue(MeasureSelect[Measure], "Active Qty")
+                return if(selectedmetric = "Active Qty", sum(Global_Inflow_Outflow[Parallel S/O]), sum(Global_Inflow_Outflow[Parallel S/O Amt]))
+            formatString: #,0

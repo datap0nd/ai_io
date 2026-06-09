@@ -1,0 +1,47 @@
+-- Step 3 DAX validation query.
+--
+-- Run once against frozen Power BI and once after Step 3.
+-- This validates amount columns and confirms quantity totals did not move.
+
+DEFINE
+    MEASURE Global_Inflow_Outflow[_V Row Count] =
+        COUNTROWS(Global_Inflow_Outflow)
+
+    MEASURE Global_Inflow_Outflow[_V Active Qty] =
+        SUM(Global_Inflow_Outflow[Active Qty])
+
+    MEASURE Global_Inflow_Outflow[_V S/O Amt] =
+        SUM(Global_Inflow_Outflow[S/O Amt])
+
+    MEASURE Global_Inflow_Outflow[_V Total Inflow Amt] =
+        SUM(Global_Inflow_Outflow[Total Inflow Amt])
+
+    MEASURE Global_Inflow_Outflow[_V Total Outflow Amt] =
+        SUM(Global_Inflow_Outflow[Total Outflow Amt])
+
+    MEASURE Global_Inflow_Outflow[_V S/O SCM Amt] =
+        SUM(Global_Inflow_Outflow[S/O SCM Amt])
+
+    MEASURE Global_Inflow_Outflow[_V Domestic Demand Amt] =
+        SUM(Global_Inflow_Outflow[Domestic Demand Amt])
+
+    MEASURE Global_Inflow_Outflow[_V Parallel S/O Amt] =
+        SUM(Global_Inflow_Outflow[Parallel S/O Amt])
+
+EVALUATE
+UNION(
+    ROW("Grain", "Total", "Member", "All", "Metric", "Row Count", "Value", [_V Row Count]),
+    ROW("Grain", "Total", "Member", "All", "Metric", "Active Qty", "Value", [_V Active Qty]),
+    ROW("Grain", "Total", "Member", "All", "Metric", "S/O Amt", "Value", [_V S/O Amt]),
+    ROW("Grain", "Total", "Member", "All", "Metric", "Total Inflow Amt", "Value", [_V Total Inflow Amt]),
+    ROW("Grain", "Total", "Member", "All", "Metric", "Total Outflow Amt", "Value", [_V Total Outflow Amt]),
+    ROW("Grain", "Total", "Member", "All", "Metric", "S/O SCM Amt", "Value", [_V S/O SCM Amt]),
+    ROW("Grain", "Total", "Member", "All", "Metric", "Domestic Demand Amt", "Value", [_V Domestic Demand Amt]),
+    ROW("Grain", "Total", "Member", "All", "Metric", "Parallel S/O Amt", "Value", [_V Parallel S/O Amt]),
+    SELECTCOLUMNS(SUMMARIZECOLUMNS(Global_Inflow_Outflow[Month], "Value", [_V S/O Amt]), "Grain", "Month", "Member", FORMAT(Global_Inflow_Outflow[Month], "0"), "Metric", "S/O Amt", "Value", [Value]),
+    SELECTCOLUMNS(SUMMARIZECOLUMNS(Global_Inflow_Outflow[In/Out], "Value", [_V S/O Amt]), "Grain", "In/Out", "Member", Global_Inflow_Outflow[In/Out], "Metric", "S/O Amt", "Value", [Value])
+)
+ORDER BY
+    [Grain],
+    [Member],
+    [Metric]

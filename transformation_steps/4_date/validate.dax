@@ -1,0 +1,28 @@
+-- Step 4 DAX validation query.
+--
+-- Run once against frozen Power BI and once after Step 4.
+-- This validates the Month Map shape and the fact relationship by month.
+
+DEFINE
+    MEASURE 'Month Map'[_V Month Rows] =
+        COUNTROWS('Month Map')
+
+    MEASURE Global_Inflow_Outflow[_V Active Qty] =
+        SUM(Global_Inflow_Outflow[Active Qty])
+
+    MEASURE Global_Inflow_Outflow[_V S/O SCM] =
+        SUM(Global_Inflow_Outflow[S/O SCM])
+
+EVALUATE
+UNION(
+    ROW("Grain", "Total", "Member", "All", "Metric", "Month Rows", "Value", 'Month Map'[_V Month Rows]),
+    ROW("Grain", "Total", "Member", "All", "Metric", "Min Month", "Value", MIN('Month Map'[Month])),
+    ROW("Grain", "Total", "Member", "All", "Metric", "Max Month", "Value", MAX('Month Map'[Month])),
+    SELECTCOLUMNS(SUMMARIZECOLUMNS('Month Map'[Year], "Value", 'Month Map'[_V Month Rows]), "Grain", "Year", "Member", FORMAT('Month Map'[Year], "0"), "Metric", "Month Rows", "Value", [Value]),
+    SELECTCOLUMNS(SUMMARIZECOLUMNS('Month Map'[Quarter], "Value", Global_Inflow_Outflow[_V Active Qty]), "Grain", "Quarter", "Member", 'Month Map'[Quarter], "Metric", "Active Qty", "Value", [Value]),
+    SELECTCOLUMNS(SUMMARIZECOLUMNS('Month Map'[Month], "Value", Global_Inflow_Outflow[_V S/O SCM]), "Grain", "Month", "Member", FORMAT('Month Map'[Month], "0"), "Metric", "S/O SCM", "Value", [Value])
+)
+ORDER BY
+    [Grain],
+    [Member],
+    [Metric]

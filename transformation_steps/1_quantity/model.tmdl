@@ -1,0 +1,171 @@
+// Step 1 TMDL script.
+//
+// Purpose:
+// Point Global_Inflow_Outflow at the Step 1 SQL materialized view and replace
+// the main Formulas measures with quantity-only definitions.
+//
+// Notes:
+// - Use this on a Step 1 validation copy of the model.
+// - This intentionally avoids Amount ($) logic until ASP is validated.
+// - The Power Query-only paste option is in power_query.m.
+
+createOrReplace
+
+    ref table Global_Inflow_Outflow
+
+        column 'Source Side'
+            dataType: string
+            sourceColumn: Source Side
+
+        column 'Grand total'
+            dataType: string
+            sourceColumn: Grand total
+
+        column ASP
+            dataType: double
+            summarizeBy: sum
+            sourceColumn: ASP
+
+        column 'Across Sub'
+            dataType: string
+            sourceColumn: Across Sub
+
+        column 'Parallel S/O'
+            dataType: double
+            formatString: #,0
+            summarizeBy: sum
+            sourceColumn: Parallel S/O
+
+        partition Global_Inflow_Outflow = m
+            mode: import
+            source =
+                    let
+                        Source = PostgreSQL.Database("SERVER_NAME", "DATABASE_NAME"),
+                        Step1Quantity = Value.NativeQuery(
+                            Source,
+                            "select * from bi_reporting.io_1_quantity_mv",
+                            null,
+                            [EnableFolding = true]
+                        )
+                    in
+                        Step1Quantity
+
+    ref table Formulas
+
+        measure 'Total Inflow' = sum(Global_Inflow_Outflow[Total Inflow])
+            formatString: #,0
+
+        measure 'From MENA' = sum(Global_Inflow_Outflow[From MENA])
+            formatString: #,0
+
+        measure 'From non-MENA' = sum(Global_Inflow_Outflow[From Non-MENA])
+            formatString: #,0
+
+        measure 'Total Outflow' = sum(Global_Inflow_Outflow[Total Outflow])
+            formatString: #,0
+
+        measure 'To MENA' = sum(Global_Inflow_Outflow[To MENA Outflow])
+            formatString: #,0
+
+        measure 'To non-MENA' = sum(Global_Inflow_Outflow[To Non-MENA])
+            formatString: #,0
+
+        measure 'S/O SCM' = sum(Global_Inflow_Outflow[S/O SCM])
+            formatString: #,0
+
+        measure 'Domestic Demand' = sum(Global_Inflow_Outflow[Domestic Demand])
+            formatString: #,0
+
+        measure 'S/O that Stays' = sum(Global_Inflow_Outflow[S/O that Stays])
+            formatString: #,0
+
+        measure '2nd Activation In' = sum(Global_Inflow_Outflow[2nd Activation In])
+            formatString: #,0
+
+        measure '2nd Activation Out' = sum(Global_Inflow_Outflow[2nd Activation Out])
+            formatString: #,0
+
+        measure '2nd Activation In+Out' = [2nd Activation In] + [2nd Activation Out]
+            formatString: #,0
+
+        measure 'CI In' = sum(Global_Inflow_Outflow[CI In])
+            formatString: #,0
+
+        measure 'CI Out' = sum(Global_Inflow_Outflow[CI Out])
+            formatString: #,0
+
+        measure 'CI In+Out' = [CI In] + [CI Out]
+            formatString: #,0
+
+        measure 'Parallel S/O' = sum(Global_Inflow_Outflow[Parallel S/O])
+            formatString: #,0
+
+        measure 'Inflow + Outflow' = [Total Inflow] + [Total Outflow]
+            formatString: #,0
+
+        measure 'Net Export' = [Total Outflow] - [Total Inflow]
+            formatString: #,0
+
+        measure 'S/O SCM or Domestic Demand' =
+                var selectedCurrent = selectedvalue(Global_Inflow_Outflow[Current Region], 0)
+                return if(selectedCurrent <> blank(), [Domestic Demand], [S/O SCM])
+
+        measure 'Inflow vs Domestic Demand' = divide([Total Inflow], [Domestic Demand])
+            formatString: 0%;-0%;0%
+
+        measure 'Inflow vs S/O SCM' = divide([Total Inflow], [S/O SCM])
+            formatString: 0%;-0%;0%
+
+        measure 'Total Outflow vs S/O SCM' = divide([Total Outflow], [S/O SCM])
+            formatString: 0%;-0%;0%
+
+        measure 'Total Outflow vs S/O SCM or Domestic Demand' = divide([Total Outflow], [S/O SCM or Domestic Demand])
+            formatString: 0%;-0%;0%
+
+        measure 'Total Inflow vs S/O SCM or Domestic Demand' = divide([Total Inflow], [S/O SCM or Domestic Demand])
+            formatString: 0%;-0%;0%
+
+        measure 'From MENA %' = divide([From MENA], [Total Inflow])
+            formatString: 0%;-0%;0%
+
+        measure 'From non-MENA %' = divide([From non-MENA], [Total Inflow])
+            formatString: 0%;-0%;0%
+
+        measure 'From non-MENA vs S/O SCM' = divide([From non-MENA], [S/O SCM])
+            formatString: 0%;-0%;0%
+
+        measure 'To MENA %' = divide([To MENA], [Total Outflow])
+            formatString: 0%;-0%;0%
+
+        measure 'To non-MENA %' = divide([To non-MENA], [Total Outflow])
+            formatString: 0%;-0%;0%
+
+        measure 'To Non-MENA vs S/O SCM' = divide([To non-MENA], [S/O SCM])
+            formatString: 0%;-0%;0%
+
+        measure '2nd Activation In %' = divide([2nd Activation In], [Total Inflow])
+            formatString: 0%;-0%;0%
+
+        measure '2nd Activation Out %' = divide([2nd Activation Out], [Total Outflow])
+            formatString: 0%;-0%;0%
+
+        measure '2nd Activation vs S/O %' = divide([2nd Activation In+Out], [S/O SCM])
+            formatString: 0%;-0%;0%
+
+        measure 'CI In %' = divide([CI In], [Total Inflow])
+            formatString: 0%;-0%;0%
+
+        measure 'CI Out %' = divide([CI Out], [Total Outflow])
+            formatString: 0%;-0%;0%
+
+        measure 'CI In+Out vs S/O' = divide([CI In+Out], [S/O SCM])
+            formatString: 0%;-0%;0%
+
+        measure 'Inflow + Outflow vs S/O %' = divide([Inflow + Outflow], [S/O SCM])
+            formatString: 0%;-0%;0%
+
+        measure 'Net Export %' = [Total Outflow vs S/O SCM] - [Inflow vs S/O SCM]
+            formatString: 0%;-0%;0%
+
+        measure 'Net Export to non-MENA %' = [To Non-MENA vs S/O SCM] - [From non-MENA vs S/O SCM]
+            formatString: 0%;-0%;0%

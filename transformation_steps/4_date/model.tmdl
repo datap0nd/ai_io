@@ -1,0 +1,46 @@
+// Step 4 TMDL script.
+//
+// Purpose:
+// Point Month Map at the SQL-backed date view.
+
+createOrReplace
+
+    ref table 'Month Map'
+
+        column Month
+            dataType: int64
+            formatString: 0
+            sourceColumn: Month
+
+        column Quarter
+            dataType: string
+            sourceColumn: Quarter
+
+        column Year
+            dataType: int64
+            formatString: 0
+            summarizeBy: sum
+            sourceColumn: Year
+
+        column Half
+            dataType: string
+            sourceColumn: Half
+
+        column Date
+            dataType: dateTime
+            formatString: yyyy-mm
+            sourceColumn: Date
+
+        partition 'Month Map' = m
+            mode: import
+            source =
+                    let
+                        Source = PostgreSQL.Database("SERVER_NAME", "DATABASE_NAME"),
+                        Step4Date = Value.NativeQuery(
+                            Source,
+                            "select * from bi_reporting.io_4_date_mv",
+                            null,
+                            [EnableFolding = true]
+                        )
+                    in
+                        Step4Date

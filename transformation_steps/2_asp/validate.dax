@@ -1,0 +1,51 @@
+-- Step 2 DAX validation query.
+--
+-- Run once against frozen Power BI and once after Step 2.
+-- Quantities must stay identical to Step 1. ASP metrics should match frozen.
+
+DEFINE
+    MEASURE Global_Inflow_Outflow[_V Row Count] =
+        COUNTROWS(Global_Inflow_Outflow)
+
+    MEASURE Global_Inflow_Outflow[_V Blank ASP Rows] =
+        COUNTROWS(FILTER(Global_Inflow_Outflow, ISBLANK(Global_Inflow_Outflow[ASP])))
+
+    MEASURE Global_Inflow_Outflow[_V ASP Sum] =
+        SUM(Global_Inflow_Outflow[ASP])
+
+    MEASURE Global_Inflow_Outflow[_V ASP Average] =
+        AVERAGE(Global_Inflow_Outflow[ASP])
+
+    MEASURE Global_Inflow_Outflow[_V Active Qty] =
+        SUM(Global_Inflow_Outflow[Active Qty])
+
+    MEASURE Global_Inflow_Outflow[_V Total Inflow] =
+        SUM(Global_Inflow_Outflow[Total Inflow])
+
+    MEASURE Global_Inflow_Outflow[_V Total Outflow] =
+        SUM(Global_Inflow_Outflow[Total Outflow])
+
+    MEASURE Global_Inflow_Outflow[_V S/O SCM] =
+        SUM(Global_Inflow_Outflow[S/O SCM])
+
+    MEASURE Global_Inflow_Outflow[_V Domestic Demand] =
+        SUM(Global_Inflow_Outflow[Domestic Demand])
+
+EVALUATE
+UNION(
+    ROW("Grain", "Total", "Member", "All", "Metric", "Row Count", "Value", [_V Row Count]),
+    ROW("Grain", "Total", "Member", "All", "Metric", "Blank ASP Rows", "Value", [_V Blank ASP Rows]),
+    ROW("Grain", "Total", "Member", "All", "Metric", "ASP Sum", "Value", [_V ASP Sum]),
+    ROW("Grain", "Total", "Member", "All", "Metric", "ASP Average", "Value", [_V ASP Average]),
+    ROW("Grain", "Total", "Member", "All", "Metric", "Active Qty", "Value", [_V Active Qty]),
+    ROW("Grain", "Total", "Member", "All", "Metric", "Total Inflow", "Value", [_V Total Inflow]),
+    ROW("Grain", "Total", "Member", "All", "Metric", "Total Outflow", "Value", [_V Total Outflow]),
+    ROW("Grain", "Total", "Member", "All", "Metric", "S/O SCM", "Value", [_V S/O SCM]),
+    ROW("Grain", "Total", "Member", "All", "Metric", "Domestic Demand", "Value", [_V Domestic Demand]),
+    SELECTCOLUMNS(SUMMARIZECOLUMNS(Global_Inflow_Outflow[Year], "Value", [_V ASP Sum]), "Grain", "Year", "Member", Global_Inflow_Outflow[Year], "Metric", "ASP Sum", "Value", [Value]),
+    SELECTCOLUMNS(SUMMARIZECOLUMNS(Global_Inflow_Outflow[Biz Grp], "Value", [_V ASP Sum]), "Grain", "Biz Grp", "Member", Global_Inflow_Outflow[Biz Grp], "Metric", "ASP Sum", "Value", [Value])
+)
+ORDER BY
+    [Grain],
+    [Member],
+    [Metric]

@@ -1,0 +1,28 @@
+// Step 2 TMDL script.
+//
+// Purpose:
+// Point Global_Inflow_Outflow at the Step 2 ASP view. Measures stay
+// quantity-only until Step 3 adds amount columns.
+
+createOrReplace
+
+    ref table Global_Inflow_Outflow
+
+        column ASP
+            dataType: double
+            summarizeBy: sum
+            sourceColumn: ASP
+
+        partition Global_Inflow_Outflow = m
+            mode: import
+            source =
+                    let
+                        Source = PostgreSQL.Database("SERVER_NAME", "DATABASE_NAME"),
+                        Step2Asp = Value.NativeQuery(
+                            Source,
+                            "select * from bi_reporting.io_2_asp_mv",
+                            null,
+                            [EnableFolding = true]
+                        )
+                    in
+                        Step2Asp
