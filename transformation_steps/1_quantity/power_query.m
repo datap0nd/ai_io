@@ -39,7 +39,6 @@ let
             ""In/Out"",
             ""Region"",
             ""Subsidiary"",
-            ""Across Sub"",
             ""Active Qty"",
             ""Total Inflow"",
             ""From MENA"",
@@ -53,8 +52,7 @@ let
             ""2nd Activation In"",
             ""2nd Activation Out"",
             ""CI In"",
-            ""CI Out"",
-            ""Parallel S/O""
+            ""CI Out""
         from bi_reporting.io_1_quantity_mv
         ",
         null,
@@ -92,7 +90,6 @@ let
             {"In/Out", type text},
             {"Region", type text},
             {"Subsidiary", type text},
-            {"Across Sub", type text},
             {"Active Qty", type number},
             {"Total Inflow", type number},
             {"From MENA", type number},
@@ -106,8 +103,7 @@ let
             {"2nd Activation In", type number},
             {"2nd Activation Out", type number},
             {"CI In", type number},
-            {"CI Out", type number},
-            {"Parallel S/O", type number}
+            {"CI Out", type number}
         }
     )
 in

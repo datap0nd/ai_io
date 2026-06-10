@@ -26,10 +26,9 @@ createOrReplace
             dataType: string
             sourceColumn: Half
 
-        column Date
-            dataType: dateTime
+        column Date =
+                date(left('Month Map'[Month], 4) * 1, mid('Month Map'[Month], 5, 2) * 1, 1)
             formatString: yyyy-mm
-            sourceColumn: Date
 
         partition 'Month Map' = m
             mode: import
@@ -38,7 +37,14 @@ createOrReplace
                         Source = PostgreSQL.Database("SERVER_NAME", "DATABASE_NAME"),
                         Step4Date = Value.NativeQuery(
                             Source,
-                            "select * from bi_reporting.io_4_date_mv",
+                            "
+                            select
+                                ""Month"",
+                                ""Quarter"",
+                                ""Year"",
+                                ""Half""
+                            from bi_reporting.io_4_date_mv
+                            ",
                             null,
                             [EnableFolding = true]
                         )

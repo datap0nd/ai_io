@@ -26,15 +26,13 @@ createOrReplace
             summarizeBy: sum
             sourceColumn: ASP
 
-        column 'Across Sub'
-            dataType: string
-            sourceColumn: Across Sub
+        column 'Across Sub' =
+                if(and('Global_Inflow_Outflow'[Sell-in Sub] = 'Global_Inflow_Outflow'[Sell-out Sub], 'Global_Inflow_Outflow'[Sell-out Sub] <> 'Global_Inflow_Outflow'[Current Sub]), "2nd Activation", if(and('Global_Inflow_Outflow'[Sell-in Sub] <> 'Global_Inflow_Outflow'[Sell-out Sub], 'Global_Inflow_Outflow'[Sell-in Sub] <> 'Global_Inflow_Outflow'[Current Sub]), "CI", if('Global_Inflow_Outflow'[Sell-in Sub] = 'Global_Inflow_Outflow'[Current Sub], "Domestic")))
 
-        column 'Parallel S/O'
-            dataType: double
+        column 'Parallel S/O' =
+                if(Global_Inflow_Outflow[Sell-in Region] <> "MIDDLE EAST", Global_Inflow_Outflow[Total Inflow] + Global_Inflow_Outflow[Total Outflow], if(and(Global_Inflow_Outflow[Current Region] <> "MIDDLE EAST", Global_Inflow_Outflow[Sell-in Region] = "MIDDLE EAST"), Global_Inflow_Outflow[Total Outflow], Global_Inflow_Outflow[Total Inflow]))
             formatString: #,0
             summarizeBy: sum
-            sourceColumn: Parallel S/O
 
         partition Global_Inflow_Outflow = m
             mode: import
@@ -43,7 +41,53 @@ createOrReplace
                         Source = PostgreSQL.Database("SERVER_NAME", "DATABASE_NAME"),
                         Step1Quantity = Value.NativeQuery(
                             Source,
-                            "select * from bi_reporting.io_1_quantity_mv",
+                            "
+                            select
+                                ""Source Side"",
+                                ""Sell-in Region"",
+                                ""Sell-in Sub"",
+                                ""Sell-in AP1"",
+                                ""Sell-in Account"",
+                                ""Sell-out Region"",
+                                ""Sell-out Sub"",
+                                ""Sell-out Country"",
+                                ""Current Region"",
+                                ""Current Sub"",
+                                ""Current Country"",
+                                ""Biz Sub"",
+                                ""Series"",
+                                ""MKT Name"",
+                                ""Memory"",
+                                ""Storage"",
+                                ""Item Code"",
+                                ""Month"",
+                                ""Year"",
+                                ""ItemID"",
+                                ""Grand total"",
+                                ""ASP"",
+                                ""Biz Grp"",
+                                ""Sell-in Channel"",
+                                ""Sell-in Country"",
+                                ""SKU"",
+                                ""In/Out"",
+                                ""Region"",
+                                ""Subsidiary"",
+                                ""Active Qty"",
+                                ""Total Inflow"",
+                                ""From MENA"",
+                                ""From Non-MENA"",
+                                ""Total Outflow"",
+                                ""To MENA Outflow"",
+                                ""To Non-MENA"",
+                                ""S/O SCM"",
+                                ""Domestic Demand"",
+                                ""S/O that Stays"",
+                                ""2nd Activation In"",
+                                ""2nd Activation Out"",
+                                ""CI In"",
+                                ""CI Out""
+                            from bi_reporting.io_1_quantity_mv
+                            ",
                             null,
                             [EnableFolding = true]
                         )

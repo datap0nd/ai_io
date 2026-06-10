@@ -17,3 +17,14 @@ Each step has four simple files:
 4. `4_date`: moves `Month Map` into SQL.
 
 Do not move to the next step until the current step validates exactly.
+
+## Power BI Calculated Column Rule
+
+Some SQL views include columns that already exist in the Power BI model as
+calculated columns, such as `Across Sub`, `Parallel S/O`, amount columns, and
+`Month Map[Date]`.
+
+The Power Query files intentionally do not import those duplicate column names.
+The TMDL files keep or restore them as calculated columns. Importing them before
+deleting the existing calculated columns causes invalid bindings or duplicate-name
+errors in Power BI.

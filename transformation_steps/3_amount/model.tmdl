@@ -8,80 +8,51 @@ createOrReplace
 
     ref table Global_Inflow_Outflow
 
-        column 'S/O Amt'
-            dataType: double
+        column 'S/O Amt' = if(Global_Inflow_Outflow[ASP] = blank(), blank(), Global_Inflow_Outflow[ASP] * Global_Inflow_Outflow[Active Qty])
             summarizeBy: sum
-            sourceColumn: S/O Amt
 
-        column 'Domestic Demand Amt'
-            dataType: double
+        column 'Domestic Demand Amt' = Global_Inflow_Outflow[Domestic Demand] * Global_Inflow_Outflow[ASP]
             summarizeBy: sum
-            sourceColumn: Domestic Demand Amt
 
-        column 'From MENA Amt'
-            dataType: double
+        column 'From MENA Amt' = Global_Inflow_Outflow[From MENA] * Global_Inflow_Outflow[ASP]
             summarizeBy: sum
-            sourceColumn: From MENA Amt
 
-        column 'From Non-MENA Amt'
-            dataType: double
+        column 'From Non-MENA Amt' = Global_Inflow_Outflow[From Non-MENA] * Global_Inflow_Outflow[ASP]
             summarizeBy: sum
-            sourceColumn: From Non-MENA Amt
 
-        column 'S/O SCM Amt'
-            dataType: double
+        column 'S/O SCM Amt' = Global_Inflow_Outflow[S/O SCM] * Global_Inflow_Outflow[ASP]
             summarizeBy: sum
-            sourceColumn: S/O SCM Amt
 
-        column 'S/O that Stays Amt'
-            dataType: double
+        column 'S/O that Stays Amt' = Global_Inflow_Outflow[S/O that Stays] * Global_Inflow_Outflow[ASP]
             summarizeBy: sum
-            sourceColumn: S/O that Stays Amt
 
-        column 'To MENA Outflow Amt'
-            dataType: double
+        column 'To MENA Outflow Amt' = Global_Inflow_Outflow[To MENA Outflow] * Global_Inflow_Outflow[ASP]
             summarizeBy: sum
-            sourceColumn: To MENA Outflow Amt
 
-        column 'To Non-MENA Amt'
-            dataType: double
+        column 'To Non-MENA Amt' = Global_Inflow_Outflow[To Non-MENA] * Global_Inflow_Outflow[ASP]
             summarizeBy: sum
-            sourceColumn: To Non-MENA Amt
 
-        column 'Total Inflow Amt'
-            dataType: double
+        column 'Total Inflow Amt' = Global_Inflow_Outflow[Total Inflow] * Global_Inflow_Outflow[ASP]
             summarizeBy: sum
-            sourceColumn: Total Inflow Amt
 
-        column 'Total Outflow Amt'
-            dataType: double
+        column 'Total Outflow Amt' = Global_Inflow_Outflow[Total Outflow] * Global_Inflow_Outflow[ASP]
             summarizeBy: sum
-            sourceColumn: Total Outflow Amt
 
-        column '2nd Activation In Amt'
-            dataType: double
+        column '2nd Activation In Amt' = Global_Inflow_Outflow[2nd Activation In] * Global_Inflow_Outflow[ASP]
             summarizeBy: sum
-            sourceColumn: 2nd Activation In Amt
 
-        column '2nd Activation Out Amt'
-            dataType: double
+        column '2nd Activation Out Amt' = Global_Inflow_Outflow[2nd Activation Out] * Global_Inflow_Outflow[ASP]
             summarizeBy: sum
-            sourceColumn: 2nd Activation Out Amt
 
-        column 'CI In Amt'
-            dataType: double
+        column 'CI In Amt' = Global_Inflow_Outflow[CI In] * Global_Inflow_Outflow[ASP]
             summarizeBy: sum
-            sourceColumn: CI In Amt
 
-        column 'CI Out Amt'
-            dataType: double
+        column 'CI Out Amt' = Global_Inflow_Outflow[CI Out] * Global_Inflow_Outflow[ASP]
             summarizeBy: sum
-            sourceColumn: CI Out Amt
 
-        column 'Parallel S/O Amt'
-            dataType: double
+        column 'Parallel S/O Amt' =
+                if(Global_Inflow_Outflow[Sell-in Region] <> "MIDDLE EAST", Global_Inflow_Outflow[Total Inflow Amt] + Global_Inflow_Outflow[Total Outflow Amt], if(and(Global_Inflow_Outflow[Current Region] <> "MIDDLE EAST", Global_Inflow_Outflow[Sell-in Region] = "MIDDLE EAST"), Global_Inflow_Outflow[Total Outflow Amt], Global_Inflow_Outflow[Total Inflow Amt]))
             summarizeBy: sum
-            sourceColumn: Parallel S/O Amt
 
         partition Global_Inflow_Outflow = m
             mode: import
@@ -90,7 +61,53 @@ createOrReplace
                         Source = PostgreSQL.Database("SERVER_NAME", "DATABASE_NAME"),
                         Step3Amount = Value.NativeQuery(
                             Source,
-                            "select * from bi_reporting.io_3_amount_mv",
+                            "
+                            select
+                                ""Source Side"",
+                                ""Sell-in Region"",
+                                ""Sell-in Sub"",
+                                ""Sell-in AP1"",
+                                ""Sell-in Account"",
+                                ""Sell-out Region"",
+                                ""Sell-out Sub"",
+                                ""Sell-out Country"",
+                                ""Current Region"",
+                                ""Current Sub"",
+                                ""Current Country"",
+                                ""Biz Sub"",
+                                ""Series"",
+                                ""MKT Name"",
+                                ""Memory"",
+                                ""Storage"",
+                                ""Item Code"",
+                                ""Month"",
+                                ""Year"",
+                                ""ItemID"",
+                                ""Grand total"",
+                                ""ASP"",
+                                ""Biz Grp"",
+                                ""Sell-in Channel"",
+                                ""Sell-in Country"",
+                                ""SKU"",
+                                ""In/Out"",
+                                ""Region"",
+                                ""Subsidiary"",
+                                ""Active Qty"",
+                                ""Total Inflow"",
+                                ""From MENA"",
+                                ""From Non-MENA"",
+                                ""Total Outflow"",
+                                ""To MENA Outflow"",
+                                ""To Non-MENA"",
+                                ""S/O SCM"",
+                                ""Domestic Demand"",
+                                ""S/O that Stays"",
+                                ""2nd Activation In"",
+                                ""2nd Activation Out"",
+                                ""CI In"",
+                                ""CI Out""
+                            from bi_reporting.io_3_amount_mv
+                            ",
                             null,
                             [EnableFolding = true]
                         )

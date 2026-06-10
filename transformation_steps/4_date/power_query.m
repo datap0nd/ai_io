@@ -12,8 +12,7 @@ let
             ""Month"",
             ""Quarter"",
             ""Year"",
-            ""Half"",
-            ""Date""
+            ""Half""
         from bi_reporting.io_4_date_mv
         ",
         null,
@@ -25,8 +24,7 @@ let
             {"Month", Int64.Type},
             {"Quarter", type text},
             {"Year", Int64.Type},
-            {"Half", type text},
-            {"Date", type date}
+            {"Half", type text}
         }
     )
 in
