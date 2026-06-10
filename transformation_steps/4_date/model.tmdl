@@ -30,6 +30,11 @@ createOrReplace
                 date(left('Month Map'[Month], 4) * 1, mid('Month Map'[Month], 5, 2) * 1, 1)
             formatString: yyyy-mm
 
+            variation Variation
+                isDefault
+                relationship: eeaa592d-95a7-49cb-a530-115e8a58dc13
+                defaultHierarchy: LocalDateTable_d95d87fa-4bee-40dd-ac09-8146bf1c1636.'Date Hierarchy'
+
         partition 'Month Map' = m
             mode: import
             source =

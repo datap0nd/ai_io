@@ -123,7 +123,7 @@ from (
         e."Storage"::text as storage,
         e."Item Code"::text as item_code,
         nullif(replace(e."Sell-out Month"::text, ',', ''), '')::bigint as month,
-        left(e."Sell-out Month"::text, 4) as year,
+        left(replace(e."Sell-out Month"::text, ',', ''), 4) as year,
         nullif(replace(e."Active"::text, ',', ''), '')::numeric as active_qty,
         case
             when e."Biz Sub" in ('A', 'S', 'Z', 'Others(SMART)') then 'SMART'
@@ -198,7 +198,7 @@ from (
         i."Storage"::text as storage,
         i."Item Code"::text as item_code,
         nullif(replace(i."Sell-out Month"::text, ',', ''), '')::bigint as month,
-        left(i."Sell-out Month"::text, 4) as year,
+        left(replace(i."Sell-out Month"::text, ',', ''), 4) as year,
         nullif(replace(i."Active"::text, ',', ''), '')::numeric as active_qty,
         case
             when i."Biz Sub" in ('A', 'S', 'Z', 'Others(SMART)') then 'SMART'
@@ -258,7 +258,10 @@ from (
     where i."Sell-in Region" <> 'Grand total'
       and i."Current Region" = 'MIDDLE EAST'
 ) src
-where src.mkt_name not in ('Galaxy Z Fold Special Edition', 'W25', 'W25 Flip')
+where (
+    src.mkt_name is null
+    or src.mkt_name not in ('Galaxy Z Fold Special Edition', 'W25', 'W25 Flip')
+)
 with data;
 
 create index io_1_quantity_mv_month_idx

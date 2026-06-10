@@ -28,3 +28,15 @@ The Power Query files intentionally do not import those duplicate column names.
 The TMDL files keep or restore them as calculated columns. Importing them before
 deleting the existing calculated columns causes invalid bindings or duplicate-name
 errors in Power BI.
+
+## Validation Caveats
+
+Step 2 uses `bi_reporting.series_asp_mv` as the SQL-side replacement for the
+Power BI `Series_ASP_Year` Excel logic. Validate Step 2 carefully by year and
+business group before trusting amount metrics. If the SQL series ASP source does
+not contain the same category years as the Excel file, ASP parity will fail.
+
+Step 3 computes amount columns in SQL for validation, but the model script keeps
+the existing calculated-column names in Power BI to avoid duplicate binding
+errors. Treat SQL amount import as a separate migration only after Step 3
+matches.

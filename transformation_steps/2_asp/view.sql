@@ -1,10 +1,14 @@
 -- Step 2: Add ASP to the validated quantity view.
 --
 -- Run only after Step 1 quantity validation passes.
--- This keeps row count and quantity columns unchanged, then fills ASP using
--- the same fallback shape as the Power BI model:
+-- This fills ASP using the same fallback shape as the Power BI model:
 -- series ASP first, global ASP fallback when series ASP is missing, too high,
 -- or non-positive.
+--
+-- The global ASP source intentionally keeps the Power BI grain instead of
+-- averaging by Biz Group and Category. If the source contains duplicate rows
+-- for that join key, Power BI fans out rows after the merge, so this view must
+-- do the same for exact parity.
 
 drop materialized view if exists bi_reporting.io_2_asp_mv;
 
@@ -74,12 +78,9 @@ left join (
     select
         "Biz Group"::text as biz_grp,
         "Category"::text as category,
-        avg(nullif(replace("Total"::text, ',', ''), '')::numeric) as global_asp
+        nullif(replace("Total"::text, ',', ''), '')::numeric as global_asp
     from "Zahab"."Sell-out Biz Plan Global_ASP"
     where "Category" <> 'DELTA'
-    group by
-        "Biz Group",
-        "Category"
 ) ga
     on ga.biz_grp = q."Biz Grp"
    and ga.category = q."Year"

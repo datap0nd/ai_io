@@ -71,6 +71,9 @@ select
     q."CI Out" * q."ASP" as "CI Out Amt",
     q."Parallel S/O",
     case
+        when q."Sell-in Region" <> 'MIDDLE EAST'
+         and q."Total Inflow" * q."ASP" is null
+         and q."Total Outflow" * q."ASP" is null then null
         when q."Sell-in Region" <> 'MIDDLE EAST' then coalesce(q."Total Inflow" * q."ASP", 0) + coalesce(q."Total Outflow" * q."ASP", 0)
         when q."Current Region" <> 'MIDDLE EAST'
          and q."Sell-in Region" = 'MIDDLE EAST' then q."Total Outflow" * q."ASP"

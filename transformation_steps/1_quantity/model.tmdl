@@ -154,58 +154,58 @@ createOrReplace
                 var selectedCurrent = selectedvalue(Global_Inflow_Outflow[Current Region], 0)
                 return if(selectedCurrent <> blank(), [Domestic Demand], [S/O SCM])
 
-        measure 'Inflow vs Domestic Demand' = divide([Total Inflow], [Domestic Demand])
+        measure 'Inflow vs Domestic Demand' = [Total Inflow] / [Domestic Demand]
             formatString: 0%;-0%;0%
 
-        measure 'Inflow vs S/O SCM' = divide([Total Inflow], [S/O SCM])
+        measure 'Inflow vs S/O SCM' = [Total Inflow] / [S/O SCM]
             formatString: 0%;-0%;0%
 
-        measure 'Total Outflow vs S/O SCM' = divide([Total Outflow], [S/O SCM])
+        measure 'Total Outflow vs S/O SCM' = [Total Outflow] / [S/O SCM]
             formatString: 0%;-0%;0%
 
-        measure 'Total Outflow vs S/O SCM or Domestic Demand' = divide([Total Outflow], [S/O SCM or Domestic Demand])
+        measure 'Total Outflow vs S/O SCM or Domestic Demand' = if([S/O SCM or Domestic Demand] <> 0, [Total Outflow] / [S/O SCM or Domestic Demand], 0)
             formatString: 0%;-0%;0%
 
-        measure 'Total Inflow vs S/O SCM or Domestic Demand' = divide([Total Inflow], [S/O SCM or Domestic Demand])
+        measure 'Total Inflow vs S/O SCM or Domestic Demand' = [Total Inflow] / [S/O SCM or Domestic Demand]
             formatString: 0%;-0%;0%
 
-        measure 'From MENA %' = divide([From MENA], [Total Inflow])
+        measure 'From MENA %' = [From MENA] / [Total Inflow]
             formatString: 0%;-0%;0%
 
-        measure 'From non-MENA %' = divide([From non-MENA], [Total Inflow])
+        measure 'From non-MENA %' = [From non-MENA] / [Total Inflow]
             formatString: 0%;-0%;0%
 
-        measure 'From non-MENA vs S/O SCM' = divide([From non-MENA], [S/O SCM])
+        measure 'From non-MENA vs S/O SCM' = [From non-MENA] / [S/O SCM]
             formatString: 0%;-0%;0%
 
-        measure 'To MENA %' = divide([To MENA], [Total Outflow])
+        measure 'To MENA %' = [To MENA] / [Total Outflow]
             formatString: 0%;-0%;0%
 
-        measure 'To non-MENA %' = divide([To non-MENA], [Total Outflow])
+        measure 'To non-MENA %' = [To non-MENA] / [Total Outflow]
             formatString: 0%;-0%;0%
 
-        measure 'To Non-MENA vs S/O SCM' = divide([To non-MENA], [S/O SCM])
+        measure 'To Non-MENA vs S/O SCM' = [To non-MENA] / [S/O SCM]
             formatString: 0%;-0%;0%
 
-        measure '2nd Activation In %' = divide([2nd Activation In], [Total Inflow])
+        measure '2nd Activation In %' = [2nd Activation In] / [Total Inflow]
             formatString: 0%;-0%;0%
 
-        measure '2nd Activation Out %' = divide([2nd Activation Out], [Total Outflow])
+        measure '2nd Activation Out %' = [2nd Activation Out] / [Total Outflow]
             formatString: 0%;-0%;0%
 
-        measure '2nd Activation vs S/O %' = divide([2nd Activation In+Out], [S/O SCM])
+        measure '2nd Activation vs S/O %' = ([2nd Activation In] + [2nd Activation Out]) / [S/O SCM]
             formatString: 0%;-0%;0%
 
-        measure 'CI In %' = divide([CI In], [Total Inflow])
+        measure 'CI In %' = [CI In] / [Total Inflow]
             formatString: 0%;-0%;0%
 
-        measure 'CI Out %' = divide([CI Out], [Total Outflow])
+        measure 'CI Out %' = [CI Out] / [Total Outflow]
             formatString: 0%;-0%;0%
 
-        measure 'CI In+Out vs S/O' = divide([CI In+Out], [S/O SCM])
+        measure 'CI In+Out vs S/O' = [CI In+Out] / [S/O SCM]
             formatString: 0%;-0%;0%
 
-        measure 'Inflow + Outflow vs S/O %' = divide([Inflow + Outflow], [S/O SCM])
+        measure 'Inflow + Outflow vs S/O %' = [Inflow + Outflow] / [S/O SCM]
             formatString: 0%;-0%;0%
 
         measure 'Net Export %' = [Total Outflow vs S/O SCM] - [Inflow vs S/O SCM]

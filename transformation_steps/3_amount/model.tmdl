@@ -116,11 +116,6 @@ createOrReplace
 
     ref table Formulas
 
-        measure '02 S/O' =
-                var selectedmetric = selectedvalue(MeasureSelect[Measure], "Active Qty")
-                return if(selectedmetric = "Active Qty", sum(Global_Inflow_Outflow[Active Qty]), sum(Global_Inflow_Outflow[S/O Amt]))
-            formatString: #,0
-
         measure 'Total Inflow' =
                 var selectedmetric = selectedvalue(MeasureSelect[Measure], "Active Qty")
                 return if(selectedmetric = "Active Qty", sum(Global_Inflow_Outflow[Total Inflow]), sum(Global_Inflow_Outflow[Total Inflow Amt]))
