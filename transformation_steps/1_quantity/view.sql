@@ -255,7 +255,9 @@ from (
     left join bi_reporting.account_mapping am
         on am."Subsidiary" = i."Sell-in Sub"
        and am."OrgSales" = i."Sell-in Account"
-    where i."Sell-in Region" <> 'Grand total'
+    -- The Excel import baseline only contains MIDDLE EAST sell-in rows.
+    -- The Zahab SQL table is broader, so enforce the same source scope here.
+    where i."Sell-in Region" = 'MIDDLE EAST'
       and i."Current Region" = 'MIDDLE EAST'
 ) src
 where (
