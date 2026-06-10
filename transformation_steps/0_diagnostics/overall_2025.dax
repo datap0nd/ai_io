@@ -197,6 +197,7 @@ VAR YearFilter =
 VAR TotalRows =
     ROW(
         "Row Type", "Total",
+        "Source Side", "All",
         "Year", "2025",
         "Month", "All",
         "In/Out", "All",
@@ -276,6 +277,7 @@ VAR DetailRows =
     SELECTCOLUMNS(
         SUMMARIZECOLUMNS(
             Global_Inflow_Outflow[Year],
+            Global_Inflow_Outflow[Source Side],
             Global_Inflow_Outflow[Month],
             Global_Inflow_Outflow[In/Out],
             Global_Inflow_Outflow[Sell-in Region],
@@ -351,6 +353,7 @@ VAR DetailRows =
             "Net Export to non-MENA %", [_D Net Export to non-MENA %]
         ),
         "Row Type", "Detail",
+        "Source Side", COALESCE(Global_Inflow_Outflow[Source Side], "<blank>"),
         "Year", COALESCE(Global_Inflow_Outflow[Year], "<blank>"),
         "Month", IF(ISBLANK(Global_Inflow_Outflow[Month]), "<blank>", FORMAT(Global_Inflow_Outflow[Month], "0")),
         "In/Out", COALESCE(Global_Inflow_Outflow[In/Out], "<blank>"),
@@ -431,6 +434,7 @@ RETURN
 
 ORDER BY
     [Row Type],
+    [Source Side],
     [Year],
     [Month],
     [In/Out],
