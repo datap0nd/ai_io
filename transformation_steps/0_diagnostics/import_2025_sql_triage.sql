@@ -8,10 +8,13 @@
 --
 -- Read the result sets in this order:
 -- 1. source_scope_by_inout_mkt_status
--- 2. account_mapping_duplicate_keys_hit
--- 3. account_join_fanout_by_inout
--- 4. joined_totals_current_step_logic
--- 5. materialized_view_import_totals
+-- 2. current_vs_strict_mkt_filter
+-- 3. classification_plain_sql_vs_power_query_nulls
+-- 4. source_scope_by_month_inout
+-- 5. account_mapping_duplicate_keys_hit
+-- 6. account_join_fanout_by_inout
+-- 7. joined_totals_current_step_logic
+-- 8. materialized_view_import_totals
 
 drop table if exists pg_temp.io_diag_import_2025_source;
 drop table if exists pg_temp.io_diag_import_2025_after_current_mkt_filter;
@@ -35,6 +38,10 @@ select
     nullif(replace(i."Sell-out Month"::text, ',', ''), '')::bigint as month,
     left(replace(i."Sell-out Month"::text, ',', ''), 4) as year,
     nullif(replace(i."Active"::text, ',', ''), '')::numeric as active_qty,
+    case
+        when i."Sell-in Sub" = i."Current Sub" then 'Domestic-I'
+        else 'Inflow'
+    end as in_out_plain_sql,
     case
         when i."Sell-in Sub" is not distinct from i."Current Sub" then 'Domestic-I'
         else 'Inflow'
@@ -139,6 +146,50 @@ select
 from io_diag_import_2025_after_strict_mkt_filter
 order by
     filter_variant;
+
+select
+    'classification_plain_sql_vs_power_query_nulls' as check_name,
+    in_out_plain_sql,
+    in_out as in_out_power_query_nulls,
+    case when sell_in_sub is null then 'blank_sell_in_sub' else 'present_sell_in_sub' end as sell_in_sub_status,
+    case when current_sub is null then 'blank_current_sub' else 'present_current_sub' end as current_sub_status,
+    count(*) as rows,
+    sum(active_qty) as active_qty,
+    sum(case when in_out_plain_sql = 'Inflow' then active_qty else 0 end) as total_inflow_plain_sql,
+    sum(case when in_out = 'Inflow' then active_qty else 0 end) as total_inflow_power_query_nulls,
+    sum(case when in_out_plain_sql = 'Inflow' then active_qty else 0 end)
+      - sum(case when in_out = 'Inflow' then active_qty else 0 end) as total_inflow_delta_plain_minus_power_query
+from io_diag_import_2025_after_current_mkt_filter
+group by
+    in_out_plain_sql,
+    in_out,
+    case when sell_in_sub is null then 'blank_sell_in_sub' else 'present_sell_in_sub' end,
+    case when current_sub is null then 'blank_current_sub' else 'present_current_sub' end
+order by
+    active_qty desc,
+    in_out_plain_sql,
+    in_out_power_query_nulls;
+
+select
+    'source_scope_by_month_inout' as check_name,
+    month,
+    in_out,
+    sell_in_region,
+    current_region,
+    count(*) as rows,
+    sum(active_qty) as active_qty,
+    sum(case when in_out = 'Inflow' then active_qty else 0 end) as total_inflow,
+    sum(active_qty) as domestic_demand
+from io_diag_import_2025_after_current_mkt_filter
+group by
+    month,
+    in_out,
+    sell_in_region,
+    current_region
+order by
+    month,
+    in_out,
+    active_qty desc;
 
 select
     'account_mapping_duplicate_keys_hit' as check_name,
