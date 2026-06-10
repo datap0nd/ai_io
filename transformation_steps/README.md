@@ -22,6 +22,7 @@ Do not move to the next step until the current step validates exactly.
 ## Diagnostics
 
 - `0_diagnostics/overall_2025.dax`: broad 2025 validation for frozen vs SQL-backed model comparisons.
+- `0_diagnostics/import_2025_sql_triage.sql`: import-side SQL checks for inflow and domestic demand mismatches.
 
 ## Power BI Calculated Column Rule
 
