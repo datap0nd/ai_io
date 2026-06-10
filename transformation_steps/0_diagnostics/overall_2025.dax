@@ -1,0 +1,448 @@
+-- 2025 overall DAX validation.
+--
+-- Run this once on the frozen model and once on the SQL-backed model.
+-- Export both results and compare by the dimension columns.
+--
+-- The output includes:
+-- - one Total row for 2025
+-- - one Detail row per 2025 report grain
+-- - quantity components, ASP checks, amount columns, and ratio calculations
+--
+-- This is intentionally broader than a Net Export check. Net Export is only
+-- one output column here.
+
+DEFINE
+    MEASURE Global_Inflow_Outflow[_D Rows] =
+        COUNTROWS(Global_Inflow_Outflow)
+
+    MEASURE Global_Inflow_Outflow[_D Active Qty] =
+        SUM(Global_Inflow_Outflow[Active Qty])
+
+    MEASURE Global_Inflow_Outflow[_D Total Inflow] =
+        SUM(Global_Inflow_Outflow[Total Inflow])
+
+    MEASURE Global_Inflow_Outflow[_D From MENA] =
+        SUM(Global_Inflow_Outflow[From MENA])
+
+    MEASURE Global_Inflow_Outflow[_D From Non-MENA] =
+        SUM(Global_Inflow_Outflow[From Non-MENA])
+
+    MEASURE Global_Inflow_Outflow[_D Total Outflow] =
+        SUM(Global_Inflow_Outflow[Total Outflow])
+
+    MEASURE Global_Inflow_Outflow[_D To MENA Outflow] =
+        SUM(Global_Inflow_Outflow[To MENA Outflow])
+
+    MEASURE Global_Inflow_Outflow[_D To Non-MENA] =
+        SUM(Global_Inflow_Outflow[To Non-MENA])
+
+    MEASURE Global_Inflow_Outflow[_D Inflow + Outflow] =
+        [_D Total Inflow] + [_D Total Outflow]
+
+    MEASURE Global_Inflow_Outflow[_D Net Export] =
+        [_D Total Outflow] - [_D Total Inflow]
+
+    MEASURE Global_Inflow_Outflow[_D S/O SCM] =
+        SUM(Global_Inflow_Outflow[S/O SCM])
+
+    MEASURE Global_Inflow_Outflow[_D Domestic Demand] =
+        SUM(Global_Inflow_Outflow[Domestic Demand])
+
+    MEASURE Global_Inflow_Outflow[_D S/O that Stays] =
+        SUM(Global_Inflow_Outflow[S/O that Stays])
+
+    MEASURE Global_Inflow_Outflow[_D 2nd Activation In] =
+        SUM(Global_Inflow_Outflow[2nd Activation In])
+
+    MEASURE Global_Inflow_Outflow[_D 2nd Activation Out] =
+        SUM(Global_Inflow_Outflow[2nd Activation Out])
+
+    MEASURE Global_Inflow_Outflow[_D 2nd Activation In+Out] =
+        [_D 2nd Activation In] + [_D 2nd Activation Out]
+
+    MEASURE Global_Inflow_Outflow[_D CI In] =
+        SUM(Global_Inflow_Outflow[CI In])
+
+    MEASURE Global_Inflow_Outflow[_D CI Out] =
+        SUM(Global_Inflow_Outflow[CI Out])
+
+    MEASURE Global_Inflow_Outflow[_D CI In+Out] =
+        [_D CI In] + [_D CI Out]
+
+    MEASURE Global_Inflow_Outflow[_D Parallel S/O] =
+        SUM(Global_Inflow_Outflow[Parallel S/O])
+
+    MEASURE Global_Inflow_Outflow[_D ASP Sum] =
+        SUM(Global_Inflow_Outflow[ASP])
+
+    MEASURE Global_Inflow_Outflow[_D ASP Average] =
+        AVERAGE(Global_Inflow_Outflow[ASP])
+
+    MEASURE Global_Inflow_Outflow[_D Blank ASP Rows] =
+        COUNTROWS(FILTER(Global_Inflow_Outflow, ISBLANK(Global_Inflow_Outflow[ASP])))
+
+    MEASURE Global_Inflow_Outflow[_D S/O Amt] =
+        SUM(Global_Inflow_Outflow[S/O Amt])
+
+    MEASURE Global_Inflow_Outflow[_D Total Inflow Amt] =
+        SUM(Global_Inflow_Outflow[Total Inflow Amt])
+
+    MEASURE Global_Inflow_Outflow[_D From MENA Amt] =
+        SUM(Global_Inflow_Outflow[From MENA Amt])
+
+    MEASURE Global_Inflow_Outflow[_D From Non-MENA Amt] =
+        SUM(Global_Inflow_Outflow[From Non-MENA Amt])
+
+    MEASURE Global_Inflow_Outflow[_D Total Outflow Amt] =
+        SUM(Global_Inflow_Outflow[Total Outflow Amt])
+
+    MEASURE Global_Inflow_Outflow[_D To MENA Outflow Amt] =
+        SUM(Global_Inflow_Outflow[To MENA Outflow Amt])
+
+    MEASURE Global_Inflow_Outflow[_D To Non-MENA Amt] =
+        SUM(Global_Inflow_Outflow[To Non-MENA Amt])
+
+    MEASURE Global_Inflow_Outflow[_D S/O SCM Amt] =
+        SUM(Global_Inflow_Outflow[S/O SCM Amt])
+
+    MEASURE Global_Inflow_Outflow[_D Domestic Demand Amt] =
+        SUM(Global_Inflow_Outflow[Domestic Demand Amt])
+
+    MEASURE Global_Inflow_Outflow[_D S/O that Stays Amt] =
+        SUM(Global_Inflow_Outflow[S/O that Stays Amt])
+
+    MEASURE Global_Inflow_Outflow[_D 2nd Activation In Amt] =
+        SUM(Global_Inflow_Outflow[2nd Activation In Amt])
+
+    MEASURE Global_Inflow_Outflow[_D 2nd Activation Out Amt] =
+        SUM(Global_Inflow_Outflow[2nd Activation Out Amt])
+
+    MEASURE Global_Inflow_Outflow[_D CI In Amt] =
+        SUM(Global_Inflow_Outflow[CI In Amt])
+
+    MEASURE Global_Inflow_Outflow[_D CI Out Amt] =
+        SUM(Global_Inflow_Outflow[CI Out Amt])
+
+    MEASURE Global_Inflow_Outflow[_D Parallel S/O Amt] =
+        SUM(Global_Inflow_Outflow[Parallel S/O Amt])
+
+    MEASURE Global_Inflow_Outflow[_D S/O SCM or Domestic Demand] =
+        VAR SelectedCurrent = SELECTEDVALUE(Global_Inflow_Outflow[Current Region], 0)
+        RETURN IF(SelectedCurrent <> BLANK(), [_D Domestic Demand], [_D S/O SCM])
+
+    MEASURE Global_Inflow_Outflow[_D Inflow vs Domestic Demand] =
+        [_D Total Inflow] / [_D Domestic Demand]
+
+    MEASURE Global_Inflow_Outflow[_D Inflow vs S/O SCM] =
+        [_D Total Inflow] / [_D S/O SCM]
+
+    MEASURE Global_Inflow_Outflow[_D Total Outflow vs S/O SCM] =
+        [_D Total Outflow] / [_D S/O SCM]
+
+    MEASURE Global_Inflow_Outflow[_D Total Outflow vs S/O SCM or Domestic Demand] =
+        IF([_D S/O SCM or Domestic Demand] <> 0, [_D Total Outflow] / [_D S/O SCM or Domestic Demand], 0)
+
+    MEASURE Global_Inflow_Outflow[_D Total Inflow vs S/O SCM or Domestic Demand] =
+        [_D Total Inflow] / [_D S/O SCM or Domestic Demand]
+
+    MEASURE Global_Inflow_Outflow[_D From MENA %] =
+        [_D From MENA] / [_D Total Inflow]
+
+    MEASURE Global_Inflow_Outflow[_D From non-MENA %] =
+        [_D From Non-MENA] / [_D Total Inflow]
+
+    MEASURE Global_Inflow_Outflow[_D From non-MENA vs S/O SCM] =
+        [_D From Non-MENA] / [_D S/O SCM]
+
+    MEASURE Global_Inflow_Outflow[_D To MENA %] =
+        [_D To MENA Outflow] / [_D Total Outflow]
+
+    MEASURE Global_Inflow_Outflow[_D To non-MENA %] =
+        [_D To Non-MENA] / [_D Total Outflow]
+
+    MEASURE Global_Inflow_Outflow[_D To Non-MENA vs S/O SCM] =
+        [_D To Non-MENA] / [_D S/O SCM]
+
+    MEASURE Global_Inflow_Outflow[_D 2nd Activation In %] =
+        [_D 2nd Activation In] / [_D Total Inflow]
+
+    MEASURE Global_Inflow_Outflow[_D 2nd Activation Out %] =
+        [_D 2nd Activation Out] / [_D Total Outflow]
+
+    MEASURE Global_Inflow_Outflow[_D 2nd Activation vs S/O %] =
+        [_D 2nd Activation In+Out] / [_D S/O SCM]
+
+    MEASURE Global_Inflow_Outflow[_D CI In %] =
+        [_D CI In] / [_D Total Inflow]
+
+    MEASURE Global_Inflow_Outflow[_D CI Out %] =
+        [_D CI Out] / [_D Total Outflow]
+
+    MEASURE Global_Inflow_Outflow[_D CI In+Out vs S/O] =
+        [_D CI In+Out] / [_D S/O SCM]
+
+    MEASURE Global_Inflow_Outflow[_D Inflow + Outflow vs S/O %] =
+        [_D Inflow + Outflow] / [_D S/O SCM]
+
+    MEASURE Global_Inflow_Outflow[_D Net Export %] =
+        [_D Total Outflow vs S/O SCM] - [_D Inflow vs S/O SCM]
+
+    MEASURE Global_Inflow_Outflow[_D Net Export to non-MENA %] =
+        [_D To Non-MENA vs S/O SCM] - [_D From non-MENA vs S/O SCM]
+
+EVALUATE
+VAR YearFilter =
+    TREATAS({"2025"}, Global_Inflow_Outflow[Year])
+
+VAR TotalRows =
+    ROW(
+        "Row Type", "Total",
+        "Year", "2025",
+        "Month", "All",
+        "In/Out", "All",
+        "Sell-in Region", "All",
+        "Sell-out Region", "All",
+        "Current Region", "All",
+        "Region", "All",
+        "Subsidiary", "All",
+        "Biz Grp", "All",
+        "Sell-in Country", "All",
+        "Sell-out Country", "All",
+        "Current Country", "All",
+        "Sell-in Sub", "All",
+        "Sell-out Sub", "All",
+        "Current Sub", "All",
+        "Rows", CALCULATE([_D Rows], YearFilter),
+        "Active Qty", CALCULATE([_D Active Qty], YearFilter),
+        "Total Inflow", CALCULATE([_D Total Inflow], YearFilter),
+        "From MENA", CALCULATE([_D From MENA], YearFilter),
+        "From Non-MENA", CALCULATE([_D From Non-MENA], YearFilter),
+        "Total Outflow", CALCULATE([_D Total Outflow], YearFilter),
+        "To MENA Outflow", CALCULATE([_D To MENA Outflow], YearFilter),
+        "To Non-MENA", CALCULATE([_D To Non-MENA], YearFilter),
+        "Inflow + Outflow", CALCULATE([_D Inflow + Outflow], YearFilter),
+        "Net Export", CALCULATE([_D Net Export], YearFilter),
+        "S/O SCM", CALCULATE([_D S/O SCM], YearFilter),
+        "Domestic Demand", CALCULATE([_D Domestic Demand], YearFilter),
+        "S/O that Stays", CALCULATE([_D S/O that Stays], YearFilter),
+        "2nd Activation In", CALCULATE([_D 2nd Activation In], YearFilter),
+        "2nd Activation Out", CALCULATE([_D 2nd Activation Out], YearFilter),
+        "2nd Activation In+Out", CALCULATE([_D 2nd Activation In+Out], YearFilter),
+        "CI In", CALCULATE([_D CI In], YearFilter),
+        "CI Out", CALCULATE([_D CI Out], YearFilter),
+        "CI In+Out", CALCULATE([_D CI In+Out], YearFilter),
+        "Parallel S/O", CALCULATE([_D Parallel S/O], YearFilter),
+        "ASP Sum", CALCULATE([_D ASP Sum], YearFilter),
+        "ASP Average", CALCULATE([_D ASP Average], YearFilter),
+        "Blank ASP Rows", CALCULATE([_D Blank ASP Rows], YearFilter),
+        "S/O Amt", CALCULATE([_D S/O Amt], YearFilter),
+        "Total Inflow Amt", CALCULATE([_D Total Inflow Amt], YearFilter),
+        "From MENA Amt", CALCULATE([_D From MENA Amt], YearFilter),
+        "From Non-MENA Amt", CALCULATE([_D From Non-MENA Amt], YearFilter),
+        "Total Outflow Amt", CALCULATE([_D Total Outflow Amt], YearFilter),
+        "To MENA Outflow Amt", CALCULATE([_D To MENA Outflow Amt], YearFilter),
+        "To Non-MENA Amt", CALCULATE([_D To Non-MENA Amt], YearFilter),
+        "S/O SCM Amt", CALCULATE([_D S/O SCM Amt], YearFilter),
+        "Domestic Demand Amt", CALCULATE([_D Domestic Demand Amt], YearFilter),
+        "S/O that Stays Amt", CALCULATE([_D S/O that Stays Amt], YearFilter),
+        "2nd Activation In Amt", CALCULATE([_D 2nd Activation In Amt], YearFilter),
+        "2nd Activation Out Amt", CALCULATE([_D 2nd Activation Out Amt], YearFilter),
+        "CI In Amt", CALCULATE([_D CI In Amt], YearFilter),
+        "CI Out Amt", CALCULATE([_D CI Out Amt], YearFilter),
+        "Parallel S/O Amt", CALCULATE([_D Parallel S/O Amt], YearFilter),
+        "Inflow vs Domestic Demand", CALCULATE([_D Inflow vs Domestic Demand], YearFilter),
+        "Inflow vs S/O SCM", CALCULATE([_D Inflow vs S/O SCM], YearFilter),
+        "Total Outflow vs S/O SCM", CALCULATE([_D Total Outflow vs S/O SCM], YearFilter),
+        "Total Outflow vs S/O SCM or Domestic Demand", CALCULATE([_D Total Outflow vs S/O SCM or Domestic Demand], YearFilter),
+        "Total Inflow vs S/O SCM or Domestic Demand", CALCULATE([_D Total Inflow vs S/O SCM or Domestic Demand], YearFilter),
+        "From MENA %", CALCULATE([_D From MENA %], YearFilter),
+        "From non-MENA %", CALCULATE([_D From non-MENA %], YearFilter),
+        "From non-MENA vs S/O SCM", CALCULATE([_D From non-MENA vs S/O SCM], YearFilter),
+        "To MENA %", CALCULATE([_D To MENA %], YearFilter),
+        "To non-MENA %", CALCULATE([_D To non-MENA %], YearFilter),
+        "To Non-MENA vs S/O SCM", CALCULATE([_D To Non-MENA vs S/O SCM], YearFilter),
+        "2nd Activation In %", CALCULATE([_D 2nd Activation In %], YearFilter),
+        "2nd Activation Out %", CALCULATE([_D 2nd Activation Out %], YearFilter),
+        "2nd Activation vs S/O %", CALCULATE([_D 2nd Activation vs S/O %], YearFilter),
+        "CI In %", CALCULATE([_D CI In %], YearFilter),
+        "CI Out %", CALCULATE([_D CI Out %], YearFilter),
+        "CI In+Out vs S/O", CALCULATE([_D CI In+Out vs S/O], YearFilter),
+        "Inflow + Outflow vs S/O %", CALCULATE([_D Inflow + Outflow vs S/O %], YearFilter),
+        "Net Export %", CALCULATE([_D Net Export %], YearFilter),
+        "Net Export to non-MENA %", CALCULATE([_D Net Export to non-MENA %], YearFilter)
+    )
+
+VAR DetailRows =
+    SELECTCOLUMNS(
+        SUMMARIZECOLUMNS(
+            Global_Inflow_Outflow[Year],
+            Global_Inflow_Outflow[Month],
+            Global_Inflow_Outflow[In/Out],
+            Global_Inflow_Outflow[Sell-in Region],
+            Global_Inflow_Outflow[Sell-out Region],
+            Global_Inflow_Outflow[Current Region],
+            Global_Inflow_Outflow[Region],
+            Global_Inflow_Outflow[Subsidiary],
+            Global_Inflow_Outflow[Biz Grp],
+            Global_Inflow_Outflow[Sell-in Country],
+            Global_Inflow_Outflow[Sell-out Country],
+            Global_Inflow_Outflow[Current Country],
+            Global_Inflow_Outflow[Sell-in Sub],
+            Global_Inflow_Outflow[Sell-out Sub],
+            Global_Inflow_Outflow[Current Sub],
+            YearFilter,
+            "Rows", [_D Rows],
+            "Active Qty", [_D Active Qty],
+            "Total Inflow", [_D Total Inflow],
+            "From MENA", [_D From MENA],
+            "From Non-MENA", [_D From Non-MENA],
+            "Total Outflow", [_D Total Outflow],
+            "To MENA Outflow", [_D To MENA Outflow],
+            "To Non-MENA", [_D To Non-MENA],
+            "Inflow + Outflow", [_D Inflow + Outflow],
+            "Net Export", [_D Net Export],
+            "S/O SCM", [_D S/O SCM],
+            "Domestic Demand", [_D Domestic Demand],
+            "S/O that Stays", [_D S/O that Stays],
+            "2nd Activation In", [_D 2nd Activation In],
+            "2nd Activation Out", [_D 2nd Activation Out],
+            "2nd Activation In+Out", [_D 2nd Activation In+Out],
+            "CI In", [_D CI In],
+            "CI Out", [_D CI Out],
+            "CI In+Out", [_D CI In+Out],
+            "Parallel S/O", [_D Parallel S/O],
+            "ASP Sum", [_D ASP Sum],
+            "ASP Average", [_D ASP Average],
+            "Blank ASP Rows", [_D Blank ASP Rows],
+            "S/O Amt", [_D S/O Amt],
+            "Total Inflow Amt", [_D Total Inflow Amt],
+            "From MENA Amt", [_D From MENA Amt],
+            "From Non-MENA Amt", [_D From Non-MENA Amt],
+            "Total Outflow Amt", [_D Total Outflow Amt],
+            "To MENA Outflow Amt", [_D To MENA Outflow Amt],
+            "To Non-MENA Amt", [_D To Non-MENA Amt],
+            "S/O SCM Amt", [_D S/O SCM Amt],
+            "Domestic Demand Amt", [_D Domestic Demand Amt],
+            "S/O that Stays Amt", [_D S/O that Stays Amt],
+            "2nd Activation In Amt", [_D 2nd Activation In Amt],
+            "2nd Activation Out Amt", [_D 2nd Activation Out Amt],
+            "CI In Amt", [_D CI In Amt],
+            "CI Out Amt", [_D CI Out Amt],
+            "Parallel S/O Amt", [_D Parallel S/O Amt],
+            "Inflow vs Domestic Demand", [_D Inflow vs Domestic Demand],
+            "Inflow vs S/O SCM", [_D Inflow vs S/O SCM],
+            "Total Outflow vs S/O SCM", [_D Total Outflow vs S/O SCM],
+            "Total Outflow vs S/O SCM or Domestic Demand", [_D Total Outflow vs S/O SCM or Domestic Demand],
+            "Total Inflow vs S/O SCM or Domestic Demand", [_D Total Inflow vs S/O SCM or Domestic Demand],
+            "From MENA %", [_D From MENA %],
+            "From non-MENA %", [_D From non-MENA %],
+            "From non-MENA vs S/O SCM", [_D From non-MENA vs S/O SCM],
+            "To MENA %", [_D To MENA %],
+            "To non-MENA %", [_D To non-MENA %],
+            "To Non-MENA vs S/O SCM", [_D To Non-MENA vs S/O SCM],
+            "2nd Activation In %", [_D 2nd Activation In %],
+            "2nd Activation Out %", [_D 2nd Activation Out %],
+            "2nd Activation vs S/O %", [_D 2nd Activation vs S/O %],
+            "CI In %", [_D CI In %],
+            "CI Out %", [_D CI Out %],
+            "CI In+Out vs S/O", [_D CI In+Out vs S/O],
+            "Inflow + Outflow vs S/O %", [_D Inflow + Outflow vs S/O %],
+            "Net Export %", [_D Net Export %],
+            "Net Export to non-MENA %", [_D Net Export to non-MENA %]
+        ),
+        "Row Type", "Detail",
+        "Year", COALESCE(Global_Inflow_Outflow[Year], "<blank>"),
+        "Month", IF(ISBLANK(Global_Inflow_Outflow[Month]), "<blank>", FORMAT(Global_Inflow_Outflow[Month], "0")),
+        "In/Out", COALESCE(Global_Inflow_Outflow[In/Out], "<blank>"),
+        "Sell-in Region", COALESCE(Global_Inflow_Outflow[Sell-in Region], "<blank>"),
+        "Sell-out Region", COALESCE(Global_Inflow_Outflow[Sell-out Region], "<blank>"),
+        "Current Region", COALESCE(Global_Inflow_Outflow[Current Region], "<blank>"),
+        "Region", COALESCE(Global_Inflow_Outflow[Region], "<blank>"),
+        "Subsidiary", COALESCE(Global_Inflow_Outflow[Subsidiary], "<blank>"),
+        "Biz Grp", COALESCE(Global_Inflow_Outflow[Biz Grp], "<blank>"),
+        "Sell-in Country", COALESCE(Global_Inflow_Outflow[Sell-in Country], "<blank>"),
+        "Sell-out Country", COALESCE(Global_Inflow_Outflow[Sell-out Country], "<blank>"),
+        "Current Country", COALESCE(Global_Inflow_Outflow[Current Country], "<blank>"),
+        "Sell-in Sub", COALESCE(Global_Inflow_Outflow[Sell-in Sub], "<blank>"),
+        "Sell-out Sub", COALESCE(Global_Inflow_Outflow[Sell-out Sub], "<blank>"),
+        "Current Sub", COALESCE(Global_Inflow_Outflow[Current Sub], "<blank>"),
+        "Rows", [Rows],
+        "Active Qty", [Active Qty],
+        "Total Inflow", [Total Inflow],
+        "From MENA", [From MENA],
+        "From Non-MENA", [From Non-MENA],
+        "Total Outflow", [Total Outflow],
+        "To MENA Outflow", [To MENA Outflow],
+        "To Non-MENA", [To Non-MENA],
+        "Inflow + Outflow", [Inflow + Outflow],
+        "Net Export", [Net Export],
+        "S/O SCM", [S/O SCM],
+        "Domestic Demand", [Domestic Demand],
+        "S/O that Stays", [S/O that Stays],
+        "2nd Activation In", [2nd Activation In],
+        "2nd Activation Out", [2nd Activation Out],
+        "2nd Activation In+Out", [2nd Activation In+Out],
+        "CI In", [CI In],
+        "CI Out", [CI Out],
+        "CI In+Out", [CI In+Out],
+        "Parallel S/O", [Parallel S/O],
+        "ASP Sum", [ASP Sum],
+        "ASP Average", [ASP Average],
+        "Blank ASP Rows", [Blank ASP Rows],
+        "S/O Amt", [S/O Amt],
+        "Total Inflow Amt", [Total Inflow Amt],
+        "From MENA Amt", [From MENA Amt],
+        "From Non-MENA Amt", [From Non-MENA Amt],
+        "Total Outflow Amt", [Total Outflow Amt],
+        "To MENA Outflow Amt", [To MENA Outflow Amt],
+        "To Non-MENA Amt", [To Non-MENA Amt],
+        "S/O SCM Amt", [S/O SCM Amt],
+        "Domestic Demand Amt", [Domestic Demand Amt],
+        "S/O that Stays Amt", [S/O that Stays Amt],
+        "2nd Activation In Amt", [2nd Activation In Amt],
+        "2nd Activation Out Amt", [2nd Activation Out Amt],
+        "CI In Amt", [CI In Amt],
+        "CI Out Amt", [CI Out Amt],
+        "Parallel S/O Amt", [Parallel S/O Amt],
+        "Inflow vs Domestic Demand", [Inflow vs Domestic Demand],
+        "Inflow vs S/O SCM", [Inflow vs S/O SCM],
+        "Total Outflow vs S/O SCM", [Total Outflow vs S/O SCM],
+        "Total Outflow vs S/O SCM or Domestic Demand", [Total Outflow vs S/O SCM or Domestic Demand],
+        "Total Inflow vs S/O SCM or Domestic Demand", [Total Inflow vs S/O SCM or Domestic Demand],
+        "From MENA %", [From MENA %],
+        "From non-MENA %", [From non-MENA %],
+        "From non-MENA vs S/O SCM", [From non-MENA vs S/O SCM],
+        "To MENA %", [To MENA %],
+        "To non-MENA %", [To non-MENA %],
+        "To Non-MENA vs S/O SCM", [To Non-MENA vs S/O SCM],
+        "2nd Activation In %", [2nd Activation In %],
+        "2nd Activation Out %", [2nd Activation Out %],
+        "2nd Activation vs S/O %", [2nd Activation vs S/O %],
+        "CI In %", [CI In %],
+        "CI Out %", [CI Out %],
+        "CI In+Out vs S/O", [CI In+Out vs S/O],
+        "Inflow + Outflow vs S/O %", [Inflow + Outflow vs S/O %],
+        "Net Export %", [Net Export %],
+        "Net Export to non-MENA %", [Net Export to non-MENA %]
+    )
+
+RETURN
+    UNION(TotalRows, DetailRows)
+
+ORDER BY
+    [Row Type],
+    [Year],
+    [Month],
+    [In/Out],
+    [Sell-in Region],
+    [Sell-out Region],
+    [Current Region],
+    [Region],
+    [Subsidiary],
+    [Biz Grp],
+    [Sell-in Country],
+    [Sell-out Country],
+    [Current Country],
+    [Sell-in Sub],
+    [Sell-out Sub],
+    [Current Sub]
