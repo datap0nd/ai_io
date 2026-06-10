@@ -1,0 +1,100 @@
+-- DAX mismatch diagnostic.
+--
+-- Run this on:
+-- 1. the frozen original model
+-- 2. the SQL-backed model after each step you apply
+--
+-- Compare row count and quantities by Year, Month, and In/Out.
+
+DEFINE
+    MEASURE Global_Inflow_Outflow[_D Rows] =
+        COUNTROWS(Global_Inflow_Outflow)
+
+    MEASURE Global_Inflow_Outflow[_D Active Qty] =
+        SUM(Global_Inflow_Outflow[Active Qty])
+
+    MEASURE Global_Inflow_Outflow[_D Total Inflow] =
+        SUM(Global_Inflow_Outflow[Total Inflow])
+
+    MEASURE Global_Inflow_Outflow[_D Total Outflow] =
+        SUM(Global_Inflow_Outflow[Total Outflow])
+
+    MEASURE Global_Inflow_Outflow[_D S/O SCM] =
+        SUM(Global_Inflow_Outflow[S/O SCM])
+
+    MEASURE Global_Inflow_Outflow[_D Domestic Demand] =
+        SUM(Global_Inflow_Outflow[Domestic Demand])
+
+EVALUATE
+UNION(
+    SELECTCOLUMNS(
+        SUMMARIZECOLUMNS(
+            Global_Inflow_Outflow[Year],
+            "Rows", [_D Rows],
+            "Active Qty", [_D Active Qty],
+            "Total Inflow", [_D Total Inflow],
+            "Total Outflow", [_D Total Outflow],
+            "S/O SCM", [_D S/O SCM],
+            "Domestic Demand", [_D Domestic Demand]
+        ),
+        "Grain", "Year",
+        "Year", Global_Inflow_Outflow[Year],
+        "Month", BLANK(),
+        "In/Out", BLANK(),
+        "Rows", [Rows],
+        "Active Qty", [Active Qty],
+        "Total Inflow", [Total Inflow],
+        "Total Outflow", [Total Outflow],
+        "S/O SCM", [S/O SCM],
+        "Domestic Demand", [Domestic Demand]
+    ),
+    SELECTCOLUMNS(
+        SUMMARIZECOLUMNS(
+            Global_Inflow_Outflow[Year],
+            Global_Inflow_Outflow[Month],
+            "Rows", [_D Rows],
+            "Active Qty", [_D Active Qty],
+            "Total Inflow", [_D Total Inflow],
+            "Total Outflow", [_D Total Outflow],
+            "S/O SCM", [_D S/O SCM],
+            "Domestic Demand", [_D Domestic Demand]
+        ),
+        "Grain", "Month",
+        "Year", Global_Inflow_Outflow[Year],
+        "Month", FORMAT(Global_Inflow_Outflow[Month], "0"),
+        "In/Out", BLANK(),
+        "Rows", [Rows],
+        "Active Qty", [Active Qty],
+        "Total Inflow", [Total Inflow],
+        "Total Outflow", [Total Outflow],
+        "S/O SCM", [S/O SCM],
+        "Domestic Demand", [Domestic Demand]
+    ),
+    SELECTCOLUMNS(
+        SUMMARIZECOLUMNS(
+            Global_Inflow_Outflow[Year],
+            Global_Inflow_Outflow[In/Out],
+            "Rows", [_D Rows],
+            "Active Qty", [_D Active Qty],
+            "Total Inflow", [_D Total Inflow],
+            "Total Outflow", [_D Total Outflow],
+            "S/O SCM", [_D S/O SCM],
+            "Domestic Demand", [_D Domestic Demand]
+        ),
+        "Grain", "In/Out",
+        "Year", Global_Inflow_Outflow[Year],
+        "Month", BLANK(),
+        "In/Out", Global_Inflow_Outflow[In/Out],
+        "Rows", [Rows],
+        "Active Qty", [Active Qty],
+        "Total Inflow", [Total Inflow],
+        "Total Outflow", [Total Outflow],
+        "S/O SCM", [S/O SCM],
+        "Domestic Demand", [Domestic Demand]
+    )
+)
+ORDER BY
+    [Grain],
+    [Year],
+    [Month],
+    [In/Out]
